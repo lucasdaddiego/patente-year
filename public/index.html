@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>¿De qué año es esta patente?</title>
 <meta name="description" content="Ingresá una patente argentina y averiguá de qué año es el auto.">
+<!-- Cloudflare serves this same site on patente-year.pages.dev as well as the
+     custom domain, and a static robots.txt cannot tell the two hosts apart.
+     Without this, Google indexes both and picks a canonical itself. -->
+<link rel="canonical" href="https://patentes.daddiego.com.ar/">
 <style>
   :root { color-scheme: light dark; --fg: #111; --bg: #f6f6f6; --card: #fff; --muted: #666; --accent: #1f6feb; --err: #c62828; }
   @media (prefers-color-scheme: dark) { :root { --fg: #eee; --bg: #121212; --card: #1e1e1e; --muted: #aaa; --accent: #58a6ff; --err: #ef5350; } }
