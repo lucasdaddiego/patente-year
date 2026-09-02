@@ -32,6 +32,6 @@ npm run deploy    # wrangler pages deploy public
 
 ## Deploy
 
-Every push to `master` runs the tests and deploys to Cloudflare Pages (https://patente-year.pages.dev)
+Every push to `master` runs the tests and deploys to Cloudflare Pages (https://patentes.daddiego.com.ar, also https://patente-year.pages.dev)
 via `.github/workflows/deploy.yml`, using the `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` repo secrets.
 `npm run deploy` does the same from a local checkout.
