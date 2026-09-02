@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿De qué año es esta patente?</title>
+<meta name="description" content="Ingresá una patente argentina y averiguá de qué año es el auto.">
+<style>
+  :root { color-scheme: light dark; --fg: #111; --bg: #f6f6f6; --card: #fff; --muted: #666; --accent: #1f6feb; --err: #c62828; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #eee; --bg: #121212; --card: #1e1e1e; --muted: #aaa; --accent: #58a6ff; --err: #ef5350; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; font: 16px/1.5 system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); padding: 1rem; }
+  main { width: 100%; max-width: 26rem; background: var(--card); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,.12); }
+  h1 { font-size: 1.3rem; margin: 0 0 1rem; }
+  form { display: flex; gap: .5rem; }
+  input { flex: 1; font: inherit; font-size: 1.4rem; text-transform: uppercase; letter-spacing: .1em; padding: .5rem .75rem; border: 1px solid #8884; border-radius: 8px; background: transparent; color: inherit; min-width: 0; }
+  button { font: inherit; padding: .5rem 1rem; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
+  #out { margin-top: 1.25rem; min-height: 3rem; }
+  .year { font-size: 3rem; font-weight: 700; line-height: 1; }
+  .meta { color: var(--muted); font-size: .9rem; margin-top: .25rem; }
+  .err { color: var(--err); }
+  footer { margin-top: 1.5rem; font-size: .8rem; color: var(--muted); }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>¿De qué año es esta patente?</h1>
+  <form id="f" autocomplete="off">
+    <input id="plate" name="plate" placeholder="AF 123 CD" aria-label="Patente" autofocus spellcheck="false" maxlength="10">
+    <button type="submit">Buscar</button>
+  </form>
+  <div id="out" aria-live="polite"></div>
+  <footer>Formatos: Mercosur (AA 000 AA, desde 2016), 3 letras + 3 números (1995–2016) y letra + 6 números (antes de 1995).
+    Datos de <a href="https://www.iprofesional.com/autos/376250-como-saber-el-ano-de-un-auto-por-la-patente-en-argentina" rel="noopener">iProfesional</a>.
+    Es una estimación por rango de patentamiento, no un dato oficial.</footer>
+</main>
+<script src="patente.js"></script>
+<script>
+  const form = document.getElementById('f'), input = document.getElementById('plate'), out = document.getElementById('out');
+  function render() {
+    const v = input.value.trim();
+    if (!v) { out.textContent = ''; return; }
+    try {
+      const r = patente.yearFromPlate(v);
+      const meta = [r.from && 'desde ' + r.from, r.province && 'provincia: ' + r.province, r.note].filter(Boolean).join(' · ');
+      out.innerHTML = '<div class="year"></div><div class="meta"></div>';
+      out.firstChild.textContent = r.year === null ? 'antes de 1995' : r.year;
+      out.lastChild.textContent = meta;
+    } catch (e) {
+      out.innerHTML = '<div class="err"></div>';
+      out.firstChild.textContent = 'No reconozco ese formato de patente.';
+    }
+  }
+  form.addEventListener('submit', e => { e.preventDefault(); render(); });
+  input.addEventListener('input', render);
+  const q = new URLSearchParams(location.search).get('p');
+  if (q) { input.value = q; render(); }
+</script>
+</body>
+</html>

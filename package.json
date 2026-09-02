@@ -1,0 +1,14 @@
+{
+  "name": "patente-year",
+  "version": "1.0.0",
+  "description": "Year of an Argentine car from its licence plate",
+  "license": "MIT",
+  "private": true,
+  "bin": { "patente": "./cli.js" },
+  "scripts": {
+    "test": "node --test test.js",
+    "build": "cp patente.js public/",
+    "dev": "npm run build && npx wrangler pages dev public",
+    "deploy": "npm run build && npx wrangler pages deploy public"
+  }
+}
