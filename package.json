@@ -8,7 +8,7 @@
   "scripts": {
     "test": "node --test test.js",
     "build": "cp patente.js public/",
-    "dev": "npm run build && npx wrangler pages dev public",
-    "deploy": "npm run build && npx wrangler pages deploy public"
+    "dev": "npm run build && npx wrangler pages dev public --env-file ~/.config/cloudflare/personal.env",
+    "deploy": "npm run build && npx wrangler pages deploy public --env-file ~/.config/cloudflare/personal.env --commit-dirty=true"
   }
 }
