@@ -42,7 +42,11 @@
 <script src="/patente.js"></script>
 <script>
   const form = document.getElementById('f'), input = document.getElementById('plate'), out = document.getElementById('out');
-  function render() {
+  // A complete AA 000 AA or A 000000 plate has 7 characters, and a complete AAA 000
+  // always parses. A shorter value that does not parse is still being typed, so it
+  // gets no error until the field loses focus or the form is sent.
+  const COMPLETE = 7;
+  function render(final) {
     const v = input.value.trim();
     if (!v) { out.textContent = ''; return; }
     try {
@@ -52,14 +56,16 @@
       out.firstChild.textContent = r.year === null ? 'antes de 1995' : r.year;
       out.lastChild.textContent = meta;
     } catch (e) {
+      if (!final && patente.normalize(v).length < COMPLETE) { out.textContent = ''; return; }
       out.innerHTML = '<div class="err"></div>';
       out.firstChild.textContent = 'No reconozco ese formato de patente.';
     }
   }
-  form.addEventListener('submit', e => { e.preventDefault(); render(); });
-  input.addEventListener('input', render);
+  form.addEventListener('submit', e => { e.preventDefault(); render(true); });
+  input.addEventListener('input', () => render(false));
+  input.addEventListener('blur', () => render(true));
   const q = new URLSearchParams(location.search).get('p');
-  if (q) { input.value = q; render(); }
+  if (q) { input.value = q; render(true); }
 </script>
 </body>
 </html>

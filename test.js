@@ -58,3 +58,44 @@ test('static files skip the Function', () => {
   assert.deepEqual(routes.include, ['/*']);
   for (const f of ['/', '/patente.js', '/robots.txt', '/404.html']) assert.ok(routes.exclude.includes(f), f);
 });
+
+// Runs the page's inline script against a tiny fake DOM: enough for the input,
+// the form and the output box, so the typing behaviour is testable without a browser.
+function page(search = '') {
+  const src = read('public/index.html').match(/<script>([\s\S]*?)<\/script>/)[1];
+  const node = () => ({ value: '', on: {}, addEventListener(t, f) { (this.on[t] ||= []).push(f); }, fire(t) { for (const f of this.on[t] || []) f({ preventDefault() {} }); } });
+  const out = { kids: [], text: '' };
+  Object.defineProperties(out, {
+    textContent: { get() { return this.kids.length ? this.kids.map(k => k.textContent).join(' ') : this.text; }, set(v) { this.kids = []; this.text = v; } },
+    innerHTML: { set(h) { this.text = ''; this.kids = (h.match(/<div/g) || []).map(() => ({ textContent: '' })); } },
+    firstChild: { get() { return this.kids[0]; } },
+    lastChild: { get() { return this.kids[this.kids.length - 1]; } },
+  });
+  const els = { f: node(), plate: node(), out };
+  require('node:vm').runInNewContext(src, { document: { getElementById: id => els[id] }, location: { search }, URLSearchParams, patente: require('./patente.js') });
+  return {
+    type(v) { els.plate.value = v; els.plate.fire('input'); return out.textContent; },
+    blur() { els.plate.fire('blur'); return out.textContent; },
+    submit() { els.f.fire('submit'); return out.textContent; },
+    out,
+  };
+}
+const ERR = 'No reconozco ese formato de patente.';
+test('page shows no error while a plate is still being typed', () => {
+  const p = page();
+  for (const v of ['A', 'AF', 'AF 1', 'AF 12', 'AF 123', 'AF 123 C', 'C 12345', 'ABCD']) assert.equal(p.type(v), '', v);
+  assert.equal(p.type('ABC 123'), '1995 ');
+  assert.equal(p.type('AF 123 CD'), '2021 desde agosto 2021');
+  assert.equal(p.type('ABCD 123'), ERR);
+  assert.equal(p.type('AF 123 CDE'), ERR);
+});
+test('page shows the error once the field loses focus or the form is sent', () => {
+  let p = page();
+  p.type('AF 12');
+  assert.equal(p.blur(), ERR);
+  p = page();
+  p.type('AF 12');
+  assert.equal(p.submit(), ERR);
+  assert.equal(page('?p=AF12').out.textContent, ERR);
+  assert.equal(page('?p=AF123CD').out.textContent, '2021 desde agosto 2021');
+});
