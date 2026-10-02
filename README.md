@@ -24,6 +24,11 @@ Prints the year on stdout; extra details (month range, province, notes) go to st
 
 `public/index.html` is a static page using the same `patente.js`. Add `?p=AF123CD` to prefill.
 
+Unknown paths answer 404 with `public/404.html`. That file turns off the Pages SPA fallback, so
+`functions/[plate].mjs` serves the page at a single path segment that reads as a plate (`/AF123CD`,
+`/AF123CD/?p=AF123CD`). `_redirects` cannot do this: it has no regex, and a `/:plate` rule matches any
+segment. `public/_routes.json` keeps the static files off the Function.
+
 ```sh
 npm test          # node --test
 npm run dev       # wrangler pages dev
