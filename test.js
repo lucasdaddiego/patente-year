@@ -22,3 +22,9 @@ test('pre-1995 plate', () => {
 test('rejects garbage', () => {
   for (const bad of ['', 'ABCD', '1234567', 'AA 12 AA', 'O 123456']) assert.throws(() => yearFromPlate(bad));
 });
+test('page loads patente.js from the site root', () => {
+  // Pages answers any unknown path with index.html (no 404.html), so a page
+  // opened at /AF123CD/ must not resolve the script relative to that path.
+  const html = require('node:fs').readFileSync(require('node:path').join(__dirname, 'public/index.html'), 'utf8');
+  assert.match(html, /<script src="\/patente\.js"><\/script>/);
+});
