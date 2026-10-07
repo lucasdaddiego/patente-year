@@ -1,5 +1,8 @@
 // Year lookup for Argentine licence plates (patentes).
-// Data source: https://www.iprofesional.com/autos/376250-como-saber-el-ano-de-un-auto-por-la-patente-en-argentina
+// Data sources (iProfesional):
+//   https://www.iprofesional.com/autos/376250-como-saber-el-ano-de-un-auto-por-la-patente-en-argentina
+//   https://www.iprofesional.com/actualidad/437781-como-saber-el-ano-de-un-auto-por-la-patente-en-septiembre-2025
+//   https://www.iprofesional.com/impuestos/450913-como-saber-el-ano-de-un-auto-por-la-patente-en-argentina-en-2026
 // Works both in Node (module.exports) and in the browser (global `patente`).
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -9,6 +12,11 @@
 
   // Mercosur format (AA 000 AA), in use since April 2016.
   // Each row: first plate issued from that month. Order: letters, digits, letters.
+  // The 2025 and 2026 articles both end at "Diciembre 2024 = AH-000-AA". The
+  // AG 650 and AI 000 rows have no published source (estimates from the
+  // 2026-10 review, kept so the table reaches the current year): replace them
+  // with sourced rows when an article covers 2025 and 2026. test.js fails
+  // once the last row is more than 12 months old.
   const MERCOSUR = [
     ['AA000', 2016, 'abril'],
     ['AA900', 2017, 'enero'],
@@ -26,6 +34,9 @@
     ['AG000', 2023, 'mayo'],
     ['AG300', 2023, 'octubre'],
     ['AG450', 2024, 'enero'],
+    ['AG650', 2024, 'junio'], // unsourced estimate (see above)
+    ['AH000', 2024, 'diciembre'],
+    ['AI000', 2026, 'enero'], // unsourced estimate (see above)
   ];
 
   // Old format (AAA 000), 1995-2016. The third letter identifies the
@@ -75,7 +86,7 @@
       if (!row) throw new Error(`plate ${plate} is below the first Mercosur plate (AA 000 AA)`);
       const last = MERCOSUR[MERCOSUR.length - 1];
       const out = { plate, format: 'mercosur', year: row[1], from: `${row[2]} ${row[1]}` };
-      if (row === last && key !== last[0]) out.note = `${last[1]} or later (table ends at ${last[0].slice(0, 2)} ${last[0].slice(2)} AA)`;
+      if (row === last && key !== last[0]) out.note = `${last[1]} o posterior (la tabla termina en ${last[0].slice(0, 2)} ${last[0].slice(2)} AA)`;
       return out;
     }
 
@@ -85,7 +96,7 @@
       const row = lastAtOrBelow(OLD, key);
       if (!row) throw new Error(`plate ${plate} is below the first 3-letter plate (AAA 000)`);
       const out = { plate, format: 'old', year: row[1] };
-      if (row === OLD[OLD.length - 1] && key !== row[0]) out.note = 'past the last tabulated pair (PM); format ended in 2016';
+      if (row === OLD[OLD.length - 1] && key !== row[0]) out.note = 'posterior al último par tabulado (PM); el formato terminó en 2016';
       return out;
     }
 
@@ -93,7 +104,7 @@
     if (m) {
       const province = PROVINCES[m[1]];
       if (!province) throw new Error(`unknown province letter ${m[1]}`);
-      return { plate, format: 'pre-1995', year: null, note: 'registered before 1995 (format used 1958-1994)', province };
+      return { plate, format: 'pre-1995', year: null, note: 'patentado antes de 1995 (formato usado de 1958 a 1994)', province };
     }
 
     throw new Error(`unrecognised plate format: "${input}" (expected AA 000 AA, AAA 000 or A 000000)`);
