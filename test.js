@@ -40,8 +40,8 @@ test('rejects garbage', () => {
   for (const bad of ['', 'ABCD', '1234567', 'AA 12 AA', 'O 123456']) assert.throws(() => yearFromPlate(bad));
 });
 test('page loads patente.js from the site root', () => {
-  // functions/[plate].mjs serves index.html at a plate path such as /AF123CD/,
-  // so the page must not resolve the script relative to that path.
+  // The page is only ever served at /, but an absolute path keeps it that way
+  // if a plate path is ever served in place again instead of redirected.
   const html = require('node:fs').readFileSync(require('node:path').join(__dirname, 'public/index.html'), 'utf8');
   assert.match(html, /<script src="\/patente\.js"><\/script>/);
 });
