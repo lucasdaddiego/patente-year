@@ -55,25 +55,40 @@ test('404 page exists, links home and declares no canonical', () => {
   assert.match(html, /<a href="\/">/);
   assert.doesNotMatch(html, /rel="canonical"/);
 });
-test('plate-shaped single path segments serve the page, anything else falls through', async () => {
+test('plate-shaped single path segments redirect to /?p=, anything else falls through', async () => {
   const { onRequest } = await import('./functions/[plate].mjs');
-  const call = (p, plate) => {
-    const seen = [];
-    const env = { ASSETS: { fetch: req => (seen.push(new URL(req.url).pathname + new URL(req.url).search), 'page') } };
-    const out = onRequest({ request: new Request('https://patentes.daddiego.com.ar' + p), env, params: { plate }, next: () => 'next' });
-    return { out, seen };
-  };
-  for (const [p, plate] of [['/AF123CD', 'AF123CD'], ['/AF123CD/?p=AF123CD', 'AF123CD'], ['/abc123', 'abc123'], ['/C1234567', 'C1234567'], ['/AF%20123%20CD', 'AF%20123%20CD']]) {
-    assert.deepEqual(call(p, plate), { out: 'page', seen: ['/'] }, p);
+  const call = (p, plate) => onRequest({ request: new Request('https://patentes.daddiego.com.ar' + p), params: { plate }, next: () => 'next' });
+  for (const [p, plate, want] of [['/AF123CD', 'AF123CD', 'AF123CD'], ['/AF123CD/?p=AF123CD', 'AF123CD', 'AF123CD'], ['/abc123', 'abc123', 'ABC123'],
+    ['/C1234567', 'C1234567', 'C1234567'], ['/AF%20123%20CD', 'AF%20123%20CD', 'AF123CD'], ['/af-123-cd', 'af-123-cd', 'AF123CD']]) {
+    const out = call(p, plate);
+    assert.equal(out.status, 302, p);
+    assert.equal(out.headers.get('location'), `https://patentes.daddiego.com.ar/?p=${want}`, p);
   }
   for (const [p, plate] of [['/nope-xyz', 'nope-xyz'], ['/patente.js', 'patente.js'], ['/robots.txt', 'robots.txt'], ['/O123456', 'O123456'], ['/%E0%A4%A', '%E0%A4%A']]) {
-    assert.deepEqual(call(p, plate), { out: 'next', seen: [] }, p);
+    assert.equal(call(p, plate), 'next', p);
   }
 });
 test('static files skip the Function', () => {
   const routes = JSON.parse(read('public/_routes.json'));
   assert.deepEqual(routes.include, ['/*']);
-  for (const f of ['/', '/patente.js', '/robots.txt', '/404.html']) assert.ok(routes.exclude.includes(f), f);
+  for (const f of ['/', '/patente.js', '/robots.txt', '/404.html', '/favicon.svg', '/favicon.ico']) assert.ok(routes.exclude.includes(f), f);
+});
+test('_headers CSP hashes cover exactly the inline script and styles', () => {
+  // The CSP allows inline code by hash only, so any edit to the page's script
+  // or to either <style> block must update public/_headers: this recomputes.
+  const { createHash } = require('node:crypto');
+  const sha = s => `'sha256-${createHash('sha256').update(s).digest('base64')}'`;
+  const csp = read('public/_headers').match(/Content-Security-Policy: (.*)/)[1];
+  const directive = name => (csp.match(new RegExp(`(?:^|; )${name} ([^;]*)`)) || [])[1] || '';
+  const inline = (html, tag) => [...html.matchAll(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'g'))].map(m => m[1]);
+  const index = read('public/index.html'), notFound = read('public/404.html');
+  const scripts = inline(index, 'script'), styles = [...inline(index, 'style'), ...inline(notFound, 'style')];
+  assert.equal(scripts.length, 1); assert.equal(inline(notFound, 'script').length, 0); assert.equal(styles.length, 2);
+  for (const s of scripts) assert.ok(directive('script-src').includes(sha(s)), `script-src lacks ${sha(s)}`);
+  for (const s of styles) assert.ok(directive('style-src').includes(sha(s)), `style-src lacks ${sha(s)}`);
+  const current = new Set([...scripts, ...styles].map(sha));
+  for (const h of csp.match(/'sha256-[^']+'/g)) assert.ok(current.has(h), `stale hash ${h}`);
+  assert.match(csp, /frame-ancestors 'none'/);
 });
 
 // Runs the page's inline script against a tiny fake DOM: enough for the input,

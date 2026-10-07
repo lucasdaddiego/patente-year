@@ -1,0 +1,11 @@
+# Security headers for every path. The CSP allows inline code by hash only:
+# the one <script> in index.html and the <style> block of index.html and of
+# 404.html. test.js recomputes the three hashes, so an edit to any of those
+# blocks fails npm test until this file is updated; the test shows how the
+# hash is computed. No HSTS here: that is a zone-level setting.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-y6OlFciQ9r+dRtsEQQ+3so3whGbk2LsQFYtp3LCaerE='; style-src 'sha256-CatIJCuZ+VDf//BKhuTJppQaa17Wd92aYtiNHkKFZkc=' 'sha256-T2vejPS9hZMXiPgT/6uxu/tnxAHF8eUh8lqJKhYKwMY='; img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

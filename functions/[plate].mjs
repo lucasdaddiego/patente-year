@@ -1,23 +1,30 @@
-// Plate deep links such as /AF123CD or /AF123CD/?p=AF123CD open the page.
-// They used to work only because Pages served index.html for every unknown path
-// while the site had no 404.html. public/404.html turns that SPA fallback off,
-// so this Function serves the page for one path segment that reads as a plate
-// and passes everything else on to the static files and the 404 page.
+// Plate deep links such as /AF123CD or /AF123CD/?p=AF123CD land on the page
+// with the plate prefilled: a 302 to /?p=<plate>. The page reads only ?p=, so
+// serving it in place (the previous behaviour) opened an empty form from a
+// shared /AF123CD link; the redirect also keeps one URL per plate instead of
+// a copy of the page under every plate path.
+// public/404.html turns the Pages SPA fallback off, so anything that does not
+// read as a plate passes on to the static files and the 404 page.
 // _redirects cannot do this: its placeholders match any segment and it has no
-// regex, so a 200 rule for /:plate would also answer /nope-xyz with the page.
+// regex, so a rule for /:plate would also answer /nope-xyz.
 // public/_routes.json keeps the static files off the Function.
 import patente from '../patente.js';
 
-function isPlate(segment) {
+// The normalised plate (AF123CD) when the segment reads as one, else null.
+function plateOf(segment) {
   try {
-    patente.yearFromPlate(decodeURIComponent(segment));
-    return true;
+    const plate = patente.normalize(decodeURIComponent(segment));
+    patente.yearFromPlate(plate);
+    return plate;
   } catch {
-    return false;
+    return null;
   }
 }
 
-export function onRequest({ request, env, params, next }) {
-  if (!isPlate(params.plate)) return next();
-  return env.ASSETS.fetch(new Request(new URL('/', request.url), request));
+export function onRequest({ request, params, next }) {
+  const plate = plateOf(params.plate);
+  if (!plate) return next();
+  const to = new URL('/', request.url);
+  to.searchParams.set('p', plate);
+  return Response.redirect(to.href, 302);
 }

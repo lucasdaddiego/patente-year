@@ -9,6 +9,7 @@
      custom domain, and a static robots.txt cannot tell the two hosts apart.
      Without this, Google indexes both and picks a canonical itself. -->
 <link rel="canonical" href="https://patentes.daddiego.com.ar/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
   :root { color-scheme: light dark; --fg: #111; --bg: #f6f6f6; --card: #fff; --muted: #666; --accent: #1f6feb; --err: #c62828; }
   @media (prefers-color-scheme: dark) { :root { --fg: #eee; --bg: #121212; --card: #1e1e1e; --muted: #aaa; --accent: #58a6ff; --err: #ef5350; } }
@@ -35,12 +36,13 @@
 <main>
   <h1>¿De qué año es esta patente?</h1>
   <form id="f" autocomplete="off">
-    <input id="plate" name="plate" placeholder="AF 123 CD · ABC 123" aria-label="Patente" autofocus spellcheck="false" maxlength="12">
+    <input id="plate" name="plate" placeholder="AF 123 CD · ABC 123" aria-label="Patente" autofocus spellcheck="false" autocapitalize="characters" maxlength="12">
     <button type="submit">Buscar</button>
   </form>
   <div id="out" aria-live="polite"></div>
   <footer>Formatos: Mercosur (AA 000 AA, desde 2016), 3 letras + 3 números (1995–2016) y letra + 6 números (antes de 1995).
-    Datos de <a href="https://www.iprofesional.com/autos/376250-como-saber-el-ano-de-un-auto-por-la-patente-en-argentina" rel="noopener">iProfesional</a>.
+    Solo autos: las motos usan otros formatos.
+    Datos de <a href="https://www.iprofesional.com/impuestos/450913-como-saber-el-ano-de-un-auto-por-la-patente-en-argentina-en-2026" rel="noopener">iProfesional</a>.
     Es una estimación por rango de patentamiento, no un dato oficial.</footer>
 </main>
 <script src="/patente.js"></script>
