@@ -116,3 +116,11 @@ test('page shows the error once the field loses focus or the form is sent', () =
   assert.equal(page('?p=AF12').out.textContent, ERR);
   assert.equal(page('?p=AF123CD').out.textContent, '2021 desde agosto 2021');
 });
+
+test('cli --json prints the result object on one line', () => {
+  const { execFileSync } = require('node:child_process');
+  const cli = require('node:path').join(__dirname, 'cli.js');
+  assert.deepEqual(JSON.parse(execFileSync(process.execPath, [cli, '--json', 'AF 123 CD'], { encoding: 'utf8' })),
+    { plate: 'AF123CD', format: 'mercosur', year: 2021, from: 'agosto 2021' });
+  assert.throws(() => execFileSync(process.execPath, [cli, '--json', 'nope'], { encoding: 'utf8', stdio: 'pipe' }), /"error"/);
+});
