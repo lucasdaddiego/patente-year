@@ -9,3 +9,12 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# patente-year.pages.dev, and every preview deployment under it, serves the same
+# files as patentes.daddiego.com.ar. The page's canonical link names the custom
+# domain; noindex keeps the twin out of search results outright. Pages matches
+# these absolute-URL rules on the host, so the custom domain never gets them.
+https://patente-year.pages.dev/*
+  X-Robots-Tag: noindex
+https://:version.patente-year.pages.dev/*
+  X-Robots-Tag: noindex

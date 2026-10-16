@@ -90,6 +90,12 @@ test('_headers CSP hashes cover exactly the inline script and styles', () => {
   for (const h of csp.match(/'sha256-[^']+'/g)) assert.ok(current.has(h), `stale hash ${h}`);
   assert.match(csp, /frame-ancestors 'none'/);
 });
+test('_headers keeps the pages.dev twin out of the index, not the custom domain', () => {
+  const rules = read('public/_headers').split('\n').filter(l => l && !l.startsWith('#'))
+    .reduce((acc, l) => { if (!/^\s/.test(l)) acc.push({ path: l, headers: [] }); else acc[acc.length - 1].headers.push(l.trim()); return acc; }, []);
+  const noindex = rules.filter(r => r.headers.includes('X-Robots-Tag: noindex')).map(r => r.path);
+  assert.deepEqual(noindex, ['https://patente-year.pages.dev/*', 'https://:version.patente-year.pages.dev/*']);
+});
 
 // Runs the page's inline script against a tiny fake DOM: enough for the input,
 // the form and the output box, so the typing behaviour is testable without a browser.

@@ -7,7 +7,8 @@
 <meta name="description" content="Ingresá una patente argentina y averiguá de qué año es el auto.">
 <!-- Cloudflare serves this same site on patente-year.pages.dev as well as the
      custom domain, and a static robots.txt cannot tell the two hosts apart.
-     Without this, Google indexes both and picks a canonical itself. -->
+     Without this, Google indexes both and picks a canonical itself. public/_headers
+     also sends X-Robots-Tag: noindex on the pages.dev hosts. -->
 <link rel="canonical" href="https://patentes.daddiego.com.ar/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
