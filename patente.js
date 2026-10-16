@@ -17,6 +17,13 @@
   // 2026-10 review, kept so the table reaches the current year): replace them
   // with sourced rows when an article covers 2025 and 2026. test.js fails
   // once the last row is more than 12 months old.
+  //
+  // Known conflict, AG 000 AA: the 2018 article (its list ends at enero 2024 =
+  // AG 450) dates AG 000 to mayo 2023 and AG 300 to octubre 2023; the 2025 and
+  // 2026 articles date AG 000 itself to octubre 2023 and list neither AG 300
+  // nor AG 450. Both give 2023, so only the "desde" month differs. The table
+  // keeps the 2018 rows, the only source with the finer split; no source
+  // settles which month is right.
   const MERCOSUR = [
     ['AA000', 2016, 'abril'],
     ['AA900', 2017, 'enero'],

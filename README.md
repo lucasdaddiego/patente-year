@@ -13,7 +13,10 @@ Supported formats:
 - Pre-1995 `A 000000` / `A 0000000`: returns "before 1995" and the province the letter stands for.
 
 The Mercosur table in `patente.js` lists the sources per row; `npm test` fails once its last row is
-more than 12 months old, so the table cannot go stale unnoticed.
+more than 12 months old, so the table cannot go stale unnoticed. Two rows (AG 650, AI 000) are
+estimates without a published source, marked as such. The sources disagree on AG 000 AA (mayo 2023 in
+the 2018 article, octubre 2023 in the 2025 and 2026 ones): the year is 2023 either way, and the
+comment above the table records which month the table keeps and why.
 
 ## CLI
 
