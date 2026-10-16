@@ -104,8 +104,11 @@ function page(search = '') {
     lastChild: { get() { return this.kids[this.kids.length - 1]; } },
   });
   const els = { f: node(), plate: node(), out };
-  require('node:vm').runInNewContext(src, { document: { getElementById: id => els[id] }, location: { search }, URLSearchParams, patente: require('./patente.js') });
+  const location = { href: 'https://patentes.daddiego.com.ar/' + search, get search() { return new URL(this.href).search; } };
+  const history = { replaceState(state, title, url) { location.href = String(url); } };
+  require('node:vm').runInNewContext(src, { document: { getElementById: id => els[id] }, location, history, URL, URLSearchParams, patente: require('./patente.js') });
   return {
+    url: () => location.href,
     type(v) { els.plate.value = v; els.plate.fire('input'); return out.textContent; },
     blur() { els.plate.fire('blur'); return out.textContent; },
     submit() { els.f.fire('submit'); return out.textContent; },
@@ -130,6 +133,23 @@ test('page shows the error once the field loses focus or the form is sent', () =
   assert.equal(p.submit(), ERR);
   assert.equal(page('?p=AF12').out.textContent, ERR);
   assert.equal(page('?p=AF123CD').out.textContent, '2021 desde agosto 2021');
+});
+test('the address bar carries the plate whose year is on screen', () => {
+  const p = page();
+  assert.equal(p.url(), 'https://patentes.daddiego.com.ar/');
+  p.type('AF 123');
+  assert.equal(p.url(), 'https://patentes.daddiego.com.ar/', 'no ?p= while typing');
+  p.type('af 123 cd');
+  assert.equal(p.url(), 'https://patentes.daddiego.com.ar/?p=AF123CD');
+  p.type('AF 123 CDE');
+  assert.equal(p.url(), 'https://patentes.daddiego.com.ar/', 'an error drops ?p=');
+  p.type('ABC 123');
+  assert.equal(p.url(), 'https://patentes.daddiego.com.ar/?p=ABC123');
+  p.type('AB');
+  assert.equal(p.url(), 'https://patentes.daddiego.com.ar/', 'a new plate being typed drops ?p=');
+  p.type('');
+  assert.equal(p.url(), 'https://patentes.daddiego.com.ar/');
+  assert.equal(page('?p=abc-123').url(), 'https://patentes.daddiego.com.ar/?p=ABC123');
 });
 
 test('cli --json prints the result object on one line', () => {

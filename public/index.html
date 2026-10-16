@@ -52,16 +52,26 @@
   // always parses. A shorter value that does not parse is still being typed, so it
   // gets no error until the field loses focus or the form is sent.
   const COMPLETE = 7;
+  // The address bar carries the plate whose year is on screen (?p=AF123CD), so
+  // copying it shares the result; no result on screen, no ?p=. replaceState:
+  // no history entry per keystroke.
+  function share(plate) {
+    const url = new URL(location.href);
+    if (plate) url.searchParams.set('p', plate); else url.searchParams.delete('p');
+    if (url.href !== location.href) history.replaceState(null, '', url);
+  }
   function render(final) {
     const v = input.value.trim();
-    if (!v) { out.textContent = ''; return; }
+    if (!v) { out.textContent = ''; share(null); return; }
     try {
       const r = patente.yearFromPlate(v);
       const meta = [r.from && 'desde ' + r.from, r.province && 'provincia: ' + r.province, r.note].filter(Boolean).join(' · ');
       out.innerHTML = '<div class="year"></div><div class="meta"></div>';
       out.firstChild.textContent = r.year === null ? 'antes de 1995' : r.year;
       out.lastChild.textContent = meta;
+      share(r.plate);
     } catch (e) {
+      share(null);
       if (!final && patente.normalize(v).length < COMPLETE) { out.textContent = ''; return; }
       out.innerHTML = '<div class="err"></div>';
       out.firstChild.textContent = 'No reconozco ese formato de patente.';

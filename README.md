@@ -29,7 +29,8 @@ whole result on stdout instead. Exit 1 on an unrecognised plate.
 
 ## Web
 
-`public/index.html` is a static page using the same `patente.js`. Add `?p=AF123CD` to prefill.
+`public/index.html` is a static page using the same `patente.js`. Add `?p=AF123CD` to prefill. The
+address bar carries `?p=` for the plate whose year is on screen, so copying it shares the result.
 
 Unknown paths answer 404 with `public/404.html`. That file turns off the Pages SPA fallback, so
 `functions/[plate].mjs` handles a single path segment that reads as a plate (`/AF123CD`, `/af-123-cd`)
